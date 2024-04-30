@@ -1,0 +1,74 @@
+FastAPI è uno degli strumenti più utilizzati per costruire API, soprattutto REST, in python, in confronto ad alternative come Flask possiamo puntare su performance migliori nonostante la complessit aggunta.
+
+
+
+1- importare le librerie da utilizzare:
+	from fastapi import FastAPI, Query, Request
+	from pydantic import BaseModel
+	from typing import Optional
+	from starlette.templating import Jinja2Templates
+	from starlette.responses import HTMLResponse
+
+
+
+
+2- inizializzare l'applicazione FastAPI:
+	app=fastAPI()
+
+
+
+
+3-inizializzare l'oggetto templates per accedere ai template
+	templates=Jinja2Templates(directory='templates')
+
+
+
+4-creiamo il nostro modello importando il modello base:
+        class Item(BaseModel):  
+    		name: str
+    		price: float
+    		tax: Optional[float] = None
+
+
+
+5- creiamo i nostri endpoint: 
+	@app.post("/items/")    #creazione del primo endpoint
+	async def create_item(item: Item):
+    		item_with_tax = item.price * (1 + (item.tax or 0.0))
+    		return {"name": item.name, "price_with_tax": item_with_tax}
+
+in questo modo l'endpoint accetterà solamente richieste POST.
+
+	@app.get("/initialize_item/") #se non effettuiamo una richiesta con i valori settati possiamo usare questo endpoint per creare oggetti di default
+	async def initialize_item(name: str = Query("Default Item"), price: float = Query(100.0), tax: Optional[float] = Query(0.1)):
+    		new_item = Item(name=name, price=price, tax=tax)
+    		return new_item.dict()
+
+In questo caso accettiamo solamente richieste del tipo GET.
+
+Utilizzando la sintassi @app.route('/esempio/', methods=['GET','POST'])
+
+
+
+6- runniamo la nostra applicazione dal main: 
+
+if __name__=='__main__':
+	import uvicorn
+	uvicorn.run(app,host="127.0.0.1",port=8000)
+
+7- ricorda che dobbiamo sempre avere come oggetto di ritorno delle funzioni asincrone dei nostri endpoint degli oggetti, in altri invece utilizziamo l'oggetto HTMLResponse  per poter poi restituire una pagina html renderizzata come risultato 
+
+return {"name": item.name, "price_with_tax": item_with_tax} 
+in questo esempio ritorniamo direttamente un dizionario che prenda dal nostro modello i dati che vogliamo restituire.
+
+@app.get('/',response_class=HTMLResponse)
+async def ironic_page(request:Request):
+    return templates.TemplateResponse("pagina_ironizzante.html", {"request": request})
+In questo esempio possiamo renderizzare una pagina html come risultato della chiamata alla funzione / endpoint.
+ricordiamoci di passare la classe della risposta nel decoratore dell'endpoint, successivamente restituiamo il template renderizzato tramite il metodo TemplateResponse della lasse template.
+
+Se ritorniamo dei dizionari abbiamo bisogno di una parte Front-end che li interpreti, oppure possiamo restituire renderizzazioni di altre pagine.
+Su classroom avevamo trattato un progettino con fastAPI nel Back-end side e Javascript nel Front-end side, nel quale richiamavamo il Bac-end con una chiamata eseguita dalla API Fetch, una volta giunta la risposta, gestita tramite Promise, la consegnavamo all'utente interpretata.
+
+
+8 - a questo punto la nostra applicazione è pronta all'utlizzo, avviato il server potremo continuare a lavorare.

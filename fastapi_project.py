@@ -8,7 +8,7 @@ app = FastAPI() #inizializziamo l'applicazione fastAPI
 
 templates = Jinja2Templates(directory="templates")
 
-class Item(BaseModel):  #creiamo il nostro modello di base
+class Item(BaseModel):  #creiamo il nostro modello
     name: str
     price: float
     tax: Optional[float] = None
@@ -26,6 +26,7 @@ async def initialize_item(name: str = Query("Default Item"), price: float = Quer
 @app.get('/',response_class=HTMLResponse)
 async def ironic_page(request:Request):
     return templates.TemplateResponse("pagina_ironizzante.html", {"request": request})
+
 
 if __name__=="__main__":
     import uvicorn
